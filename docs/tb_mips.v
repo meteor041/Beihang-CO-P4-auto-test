@@ -48,7 +48,7 @@ module tb_mips;
         
 		// Add stimulus here
 		reset = 0;
-		#2000 $stop(0);
+		#50000 $stop(0);
 	end
 	always #50 clk = ~clk;
       
