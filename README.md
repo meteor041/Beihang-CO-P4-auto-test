@@ -2,6 +2,11 @@
 
 [Beihang-CO-P4-auto-test](https://github.com/meteor041/Beihang-CO-P4-auto-test)
 
+## 运行环境
+
+1. `python 3.12`
+2. `iverilog`
+
 ## 使用方式
 
 1. 将源文件(.v结尾)放入docs文件夹
