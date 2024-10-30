@@ -5,4 +5,4 @@ cd docs
 iverilog -o wave.exe -y ./ tb_mips.v
 vvp -n wave.exe -lxt2 > ../result/your_ans.txt
 cd ../
-python compare.py >> ./result/diff.txt
+python compare.py > ./result/diff.txt
