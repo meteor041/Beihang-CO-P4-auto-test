@@ -25,7 +25,7 @@
 5. 对比结果
 	```bash
 	cd ../
-	python compare.py >> ./result/diff.txt
+	python compare.py > ./result/diff.txt
 	```
 
 ## 结果分析
