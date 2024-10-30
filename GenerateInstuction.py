@@ -5,28 +5,28 @@ number = 50
 gpr = [0] * 32
 mem = [0] * (2**10)
 
-def print_add(f):
+def print_add(f, use_ra):
     rt = randint(0, 31)
     rs = randint(0, 31)
-    rd = randint(0, 31)
+    rd = randint(0, 31) if use_ra else randint(0, 30)
     if -2**31 <= gpr[rs] + gpr[rt] <= 2**31-1:  # 若溢出,则不打印这条指令
         gpr[rd] = gpr[rs] + gpr[rt] if rd != 0 else 0
         f.write('add ' + '$' + str(rd) + ',' +
                 '$' + str(rs) + ',' +
                 '$' + str(rt) + '\n')
 
-def print_sub(f):
+def print_sub(f, use_ra):
     rt = randint(0, 31)
     rs = randint(0, 31)
-    rd = randint(0, 31)
+    rd = randint(0, 31) if use_ra else randint(0, 31)
     if -2**31 <= gpr[rs] + gpr[rt] <= 2**31-1:  # 若溢出,则不打印这条指令
         gpr[rd] = gpr[rs] + gpr[rt] if rd != 0 else 0
         f.write('sub ' + '$' + str(rd) + ',' +
                 '$' + str(rs) + ',' +
                 '$' + str(rt) + '\n')
 
-def print_ori(f):
-    rt = randint(0, 31)
+def print_ori(f, use_ra):
+    rt = randint(0, 31) if use_ra else randint(0, 30)
     rs = randint(0, 31)
     imm = randint(0, 2**8-1)
     if rt != 0:
@@ -35,8 +35,8 @@ def print_ori(f):
             '$' + str(rs) + ',' +
             str(imm) + '\n')
 
-def print_lw(f):
-    base = randint(0, 31)
+def print_lw(f, use_ra):
+    base = randint(0, 31) if use_ra else randint(0, 30)
     imm = randint(0, 2 ** 8)
     if base != 0:
         gpr[base] = imm
@@ -52,15 +52,15 @@ def print_lw(f):
                 str(offset) + '(' + '$' +
                 str(base) + ')\n')
 
-def print_sw(f):
-    base = randint(0, 31)
+def print_sw(f, use_ra):
+    base = randint(0, 31) if use_ra else randint(0, 30)
     imm = randint(0, 2 ** 8)
     if base != 0:
         gpr[base] = imm
     f.write('ori ' + '$' + str(base) + ',' +
             '$0' + ',' +
             str(imm) + '\n')
-    rt = randint(0, 31)
+    rt = randint(0, 31) if use_ra else randint(0, 30)
     offset = (randint(-200, 200) // 4) * 4 - (gpr[base] % 4)
     if 2 ** 10 > offset + gpr[base] > 0:
         if rt != 0:
@@ -137,12 +137,12 @@ def print_beq(f):
                     str(imm2) + '\n')
         f.write('beq ' + '$' + str(rs) + ',' +
                 '$' +str (rt) + ',' + label + '\n')
-        run(f, in_ct)
+        run(f, in_ct, True)
         f.write(label + ':\n')
     else:
         # 向上跳转
         f.write(label + ':\n')
-        run(f, in_ct)
+        run(f, in_ct, True)
         if equal == 1:  # 相等,这里处理死循环的可能
             sub(f, key1, key1, key2) # 第一次循环key1为0
             imm = randint(0, 2 ** 16 - 1)
@@ -168,8 +168,8 @@ def print_beq(f):
         f.write('beq ' + '$' + str(rs) + ','
                 '$' + str(rt) + ',' + label + '\n')
 
-def print_lui(f):
-    rt = randint(0, 31)
+def print_lui(f, use_ra):
+    rt = randint(0, 31) if use_ra else randint(0, 30)
     imm = randint(0, 2**16-1)
     if rt != 0:
         gpr[rt] = imm << 16
@@ -182,26 +182,26 @@ def print_nop(f):
 def print_jal(f):
     global label_ct
     f.write("jal labelx\n".replace("x", str(label_ct)))
-    run(f, randint(0,20))
+    run(f, randint(0,20), True)
     f.write("labelx:\n".replace("x", str(label_ct)))
     label_ct += 1
 
-def run(f, ct):
+def run(f, ct, use_ra):
     op_set = ['add', 'sub', 'ori', 'lw', 'sw', 'lui', 'nop']
     for _ in range(ct):
         op = op_set[randint(0, len(op_set)-1)]
         if op == 'add':
-            print_add(f)
+            print_add(f, use_ra)
         elif op == 'sub':
-            print_sub(f)
+            print_sub(f, use_ra)
         elif op == 'ori':
-            print_ori(f)
+            print_ori(f, use_ra)
         elif op == 'lw':
-            print_lw(f)
+            print_lw(f, use_ra)
         elif op == 'sw':
-            print_sw(f)
+            print_sw(f, use_ra)
         elif op == 'lui':
-            print_lui(f)
+            print_lui(f, use_ra)
         else:
             print_nop(f)
 
@@ -215,30 +215,30 @@ def main():
         for _ in range(number):
             op = op_set[randint(0, len(op_set) - 1)]
             if op == 'add':
-                print_add(f)
+                print_add(f, True)
             elif op == 'sub':
-                print_sub(f)
+                print_sub(f, True)
             elif op == 'ori':
-                print_ori(f)
+                print_ori(f, True)
             elif op == 'lw':
-                print_lw(f)
+                print_lw(f, True)
             elif op == 'sw':
-                print_sw(f)
+                print_sw(f, True)
             elif op == 'beq':
                 print_beq(f)
             elif op == 'lui':
-                print_lui(f)
+                print_lui(f, True)
             elif op == 'jal':
                 print_jal(f)
             else:
                 print_nop(f)
     # 接下来打印jr语句
         f.write("jal labelx\n".replace("x", str(label_ct)))
-        run(f, randint(0, 20))
+        run(f, randint(0, 20), False)
         f.write("jal End\n")
-        run(f, randint(0, 20))
+        run(f, randint(0, 20), False)
         f.write("labelx:\n".replace("x", str(label_ct)))
-        run(f, randint(0, 20))
+        run(f, randint(0, 20), False)
         f.write("jr $ra\n")
         # "结束"标签
         f.write("End:\n")
